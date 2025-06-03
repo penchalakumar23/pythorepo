@@ -16,9 +16,10 @@ app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here-change-in-product
 DEVELOPMENT = os.getenv('FLASK_ENV') == 'development' or os.getenv('DEVELOPMENT', 'True').lower() == 'true'
 
 def init_saml_auth(req):
-    auth = OneLogin_Saml2_Auth(req, custom_base_path=get_saml_settings_path())
-    return auth
-
+    # auth = OneLogin_Saml2_Auth(req, custom_base_path=get_saml_settings_path())
+    # return auth
+    return none
+    
 def prepare_flask_request(request):
     url_data = request.url.split('?')
     
