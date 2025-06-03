@@ -1,7 +1,7 @@
 from flask import Flask, request, redirect, session, url_for, render_template_string
-#from onelogin.saml2.auth import OneLogin_Saml2_Auth
-#from onelogin.saml2.settings import OneLogin_Saml2_Settings
-#from onelogin.saml2.utils import OneLogin_Saml2_Utils
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
+from onelogin.saml2.settings import OneLogin_Saml2_Settings
+from onelogin.saml2.utils import OneLogin_Saml2_Utils
 import os
 import json
 from dotenv import load_dotenv
@@ -10,16 +10,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here-change-in-production')
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here-change-in-production...')
 
 # Development flag
 DEVELOPMENT = os.getenv('FLASK_ENV') == 'development' or os.getenv('DEVELOPMENT', 'True').lower() == 'true'
 
 def init_saml_auth(req):
-    # auth = OneLogin_Saml2_Auth(req, custom_base_path=get_saml_settings_path())
-    # return auth
-    return none
-    
+    auth = OneLogin_Saml2_Auth(req, custom_base_path=get_saml_settings_path())
+    return auth
+    #return none
+
 def prepare_flask_request(request):
     url_data = request.url.split('?')
     
@@ -230,27 +230,81 @@ def sso():
 
 @app.route('/sls', methods=['GET', 'POST'])
 def sls():
-    req = prepare_flask_request(request)
-    auth = init_saml_auth(req)
-    url = auth.process_slo(delete_session_cb=lambda: session.clear())
-    errors = auth.get_errors()
-    
-    if not errors:
-        if url is not None:
-            return redirect(url)
-        else:
+    """Handle Single Logout Service (SLS) - both initiated and response"""
+    try:
+        # Debug logging for troubleshooting
+        print(f"SLS Request Method: {request.method}")
+        print(f"Query Args: {dict(request.args)}")
+        print(f"Form Data: {dict(request.form)}")
+        
+        # Check if we have SAML logout data
+        has_saml_request = 'SAMLRequest' in request.args or 'SAMLRequest' in request.form
+        has_saml_response = 'SAMLResponse' in request.args or 'SAMLResponse' in request.form
+        
+        if not has_saml_request and not has_saml_response:
+            print("No SAML logout data found - performing local logout")
+            session.clear()
             return redirect(url_for('index'))
-    else:
-        print("SLO Errors: ", auth.get_last_error_reason())
-        return f"<h2>❌ Logout Failed</h2><p>Error: {auth.get_last_error_reason()}</p>", 400
+        
+        # Prepare SAML request
+        req = prepare_flask_request(request)
+        auth = init_saml_auth(req)
+        
+        # Process the logout
+        url = auth.process_slo(delete_session_cb=lambda: session.clear())
+        errors = auth.get_errors()
+        
+        if not errors:
+            print("SLS processed successfully")
+            if url is not None:
+                print(f"Redirecting to: {url}")
+                return redirect(url)
+            else:
+                print("No redirect URL, going to index")
+                return redirect(url_for('index'))
+        else:
+            print(f"SLO Errors: {errors}")
+            print(f"Last error reason: {auth.get_last_error_reason()}")
+            # Clear session anyway and redirect
+            session.clear()
+            return redirect(url_for('index'))
+            
+    except Exception as e:
+        print(f"Exception in SLS: {str(e)}")
+        # Always clear session and redirect safely on any error
+        session.clear()
+        return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
-    req = prepare_flask_request(request)
-    auth = init_saml_auth(req)
-    return redirect(auth.logout())
-    # session.clear()
-    # return redirect(url_for('index'))
+    """Initiate SAML logout or local logout"""
+    try:
+        # Check if user is actually logged in via SAML
+        if 'samlUserdata' not in session:
+            print("No SAML session found - redirecting to index")
+            return redirect(url_for('index'))
+        
+        req = prepare_flask_request(request)
+        auth = init_saml_auth(req)
+        
+        # Try to initiate SAML logout
+        logout_url = auth.logout()
+        print(f"Initiating SAML logout to: {logout_url}")
+        return redirect(logout_url)
+        
+    except Exception as e:
+        print(f"Error initiating SAML logout: {str(e)}")
+        # Fallback to local logout
+        session.clear()
+        return redirect(url_for('index'))
+
+
+# Alternative: Add a local logout route for development/fallback
+@app.route('/logout/local')
+def local_logout():
+    """Force local logout without SAML"""
+    session.clear()
+    return redirect(url_for('index'))
 
 @app.route('/metadata')
 def metadata():

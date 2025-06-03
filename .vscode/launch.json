@@ -16,6 +16,9 @@
             },
             "args": [
                 "run",
+                "--host=localhost",
+                "--port=5000",
+                "--cert=adhoc",
                 "--no-debugger",
                 "--no-reload"
             ],

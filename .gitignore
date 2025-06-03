@@ -8,6 +8,7 @@ __pycache__
 sample-*.json
 Socrates_User_Accounts*
 .venv
+venv
 .flaskenv*
 .flask_session/*
 z_local/data-review/*
