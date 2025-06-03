@@ -1,0 +1,19 @@
+# Development Environment Variables
+FLASK_ENV=development
+DEVELOPMENT=true
+FLASK_DEBUG=true
+
+# SAML Configuration
+# SALESFORCE_DOMAIN=uthscsa-strongstar--rushssopoc.sandbox.my.site.com
+# SALESFORCE_CERT=YOUR_CERTIFICATE_HERE
+
+# App Configuration
+SECRET_KEY=your-super-secret-development-key
+HOST=localhost
+PORT=5000
+
+# Mock Development Settings
+MOCK_SSO_ENABLED=true
+DEV_USER_EMAIL=dev@example.com
+DEV_USER_FIRST_NAME=Dev
+DEV_USER_LAST_NAME=User

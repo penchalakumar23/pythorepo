@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - SAML SSO</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .login-container {
+            border: 1px solid #ddd;
+            padding: 30px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .btn {
+            background-color: #007cba;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #005a87;
+        }
+        .btn-mock {
+            background-color: #28a745;
+        }
+        .btn-mock:hover {
+            background-color: #218838;
+        }
+        .dev-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+        .separator {
+            margin: 20px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Welcome</h2>
+        
+        {% if config.get('DEVELOPMENT') or request.environ.get('FLASK_ENV') == 'development' %}
+        <div class="dev-notice">
+            <strong>Development Mode</strong><br>
+            You can use mock login for testing
+        </div>
+        {% endif %}
+        
+        <p>Please sign in with your Salesforce account</p>
+        <a href="{{ url_for('login') }}" class="btn">Sign in with Salesforce</a>
+        
+        {% if config.get('DEVELOPMENT') or request.environ.get('FLASK_ENV') == 'development' %}
+        <div class="separator">- OR -</div>
+        <a href="{{ url_for('mock_sso') }}" class="btn btn-mock">Mock Login (Dev Only)</a>
+        <br><br>
+        <small style="color: #666;">
+            <a href="{{ url_for('dev_status') }}" style="color: #666;">Dev Status</a> | 
+            <a href="{{ url_for('metadata') }}" style="color: #666;">SP Metadata</a>
+        </small>
+        {% endif %}
+    </div>
+</body>
+</html>

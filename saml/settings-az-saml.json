@@ -1,0 +1,44 @@
+{
+    "sp": {
+        "entityId": "https://socratescoach-saml.azurewebsites.net/metadata",
+        "assertionConsumerService": {
+            "url": "https://socratescoach-saml.azurewebsites.net/sso",
+            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+        },
+        "singleLogoutService": {
+            "url": "https://socratescoach-saml.azurewebsites.net/sls",
+            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+        },
+        "NameIDFormat": "urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress",
+        "x509cert": "",
+        "privateKey": ""
+    },
+    "idp": {
+        "entityId": "https://uthscsa-strongstar--rushssopoc.sandbox.my.salesforce.com",
+        "singleSignOnService": {
+            "url": "https://uthscsa-strongstar--rushssopoc.sandbox.my.site.com/strongstartraining/idp/login?app=0spEc0000001z4f",
+            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+        },
+        "singleLogoutService": {
+            "url": "https://uthscsa-strongstar--rushssopoc.sandbox.my.site.com/strongstartraining/services/auth/idp/saml2/logout",
+            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+        },
+        "x509cert": "MIIErDCCA5SgAwIBAgIOAZcYVOllAAAAAEgYkM4wDQYJKoZIhvcNAQELBQAwgZAxKDAmBgNVBAMMH1NlbGZTaWduZWRDZXJ0XzI4TWF5MjAyNV8xOTE4MjcxGDAWBgNVBAsMDzAwREVjMDAwMDBNeGpNRzEXMBUGA1UECgwOU2FsZXNmb3JjZS5jb20xFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xCzAJBgNVBAgMAkNBMQwwCgYDVQQGEwNVU0EwHhcNMjUwNTI4MTkxODI3WhcNMjYwNTI4MTIwMDAwWjCBkDEoMCYGA1UEAwwfU2VsZlNpZ25lZENlcnRfMjhNYXkyMDI1XzE5MTgyNzEYMBYGA1UECwwPMDBERWMwMDAwME14ak1HMRcwFQYDVQQKDA5TYWxlc2ZvcmNlLmNvbTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzELMAkGA1UECAwCQ0ExDDAKBgNVBAYTA1VTQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANrT/sQ7Xi0QO30gmFppbQhHqGi6N3cPPvpQjuuR4OfGNADIKZO2vxzoENyHwn6DlN8s5bm1hIulwkgD81vEsNPTXdxWtQfn+KURCbtLNBLzaKhIpTmF9HtbMYRvj1C1S+qvL3+LoUGSqHivFRMl1irsfU7uVNQC3F5BS9PsD465hVcDtQ+iHDXthe35hNm2pmNmbaiu8z01UeX1FfkO++0SKYRWk4FGC4BER/SEuteTFzrAh32IActZmEZFvo2J90L9fqVoUt/UxY33WBHwm7oeNom24VgvAOaIpf6CLsc9+rapGlaKjAT+hq8eAI4h/+A42Kof8daDeFOwAsci9BcCAwEAAaOCAQAwgf0wHQYDVR0OBBYEFIl8VTuKJLk/awhV8WzgAYcwOPLsMA8GA1UdEwEB/wQFMAMBAf8wgcoGA1UdIwSBwjCBv4AUiXxVO4okuT9rCFXxbOABhzA48uyhgZakgZMwgZAxKDAmBgNVBAMMH1NlbGZTaWduZWRDZXJ0XzI4TWF5MjAyNV8xOTE4MjcxGDAWBgNVBAsMDzAwREVjMDAwMDBNeGpNRzEXMBUGA1UECgwOU2FsZXNmb3JjZS5jb20xFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28xCzAJBgNVBAgMAkNBMQwwCgYDVQQGEwNVU0GCDgGXGFTpZQAAAABIGJDOMA0GCSqGSIb3DQEBCwUAA4IBAQDVOugmtVF3tXUwbZXKkq4XHta6GmIu04YLuSO+O9mZKNCaIyGrTLaup5xszxhvXGBkfw9dkEkzGPdBQDg9KLwTMFw5sJelyeYj9FejcoCsOMvbHWJVtKmnoAhNMrQ0UCfWIH6N5UXUQDbI8q7qgfbLBt4F9TEFNUGN3q4J7ceSQ/yblZ5sZJhYefM16sWLcKOb9Gojr461abJ/gsHyBR1Wc5Pxh3W75HkczHHPs6HhqAPe5NtiOMsLzJ5OJ64eYY4Y54A6vMzKcFwRcEq0Aq2CRKcZ99MTWuofbXdjI1cWSl7YrnAVOjCtmxJFVa1XgeMnD2MvEI4s+ZfEjzxGWTa0"
+    },
+    "security": {
+        "nameIdEncrypted": false,
+        "authnRequestsSigned": false,
+        "logoutRequestSigned": false,
+        "logoutResponseSigned": false,
+        "signMetadata": false,
+        "wantAssertionsSigned": true,
+        "wantNameId": true,
+        "wantAssertionsEncrypted": false,
+        "wantNameIdEncrypted": false,
+        "requestedAuthnContext": false,
+        "signatureAlgorithm": "http://www.w3.org/2000/09/xmldsig#rsa-sha1",
+        "digestAlgorithm": "http://www.w3.org/2000/09/xmldsig#sha1",
+        "allowSingleLabelDomains": true,
+        "relaxDestinationValidation": true
+    }
+}

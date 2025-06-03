@@ -1,0 +1,17 @@
+# .gitignore
+testenv
+helpers
+app.yaml
+helpers/transcript_data.json
+scripts/__pycache__
+__pycache__
+sample-*.json
+Socrates_User_Accounts*
+.venv
+.flaskenv*
+.flask_session/*
+z_local/data-review/*
+z_local/security-tools/.env*
+z_local/.env*
+static/mobile_ui/*
+
