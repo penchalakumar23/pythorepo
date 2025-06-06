@@ -1,2 +1,2 @@
 [config]
-command = bash deploy.sh
+command = bash -c "chmod +x ./deploy.sh && bash ./deploy.sh"

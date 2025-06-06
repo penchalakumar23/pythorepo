@@ -13,7 +13,8 @@ app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here-change-in-production...')
 
 # Development flag
-DEVELOPMENT = os.getenv('FLASK_ENV') == 'development' or os.getenv('DEVELOPMENT', 'True').lower() == 'true'
+#DEVELOPMENT = os.getenv('FLASK_ENV') == 'development' or os.getenv('DEVELOPMENT', 'True').lower() == 'true'
+DEVELOPMENT = False
 
 def init_saml_auth(req):
     auth = OneLogin_Saml2_Auth(req, custom_base_path=get_saml_settings_path())
@@ -398,10 +399,10 @@ def saml_info():
 
 if __name__ == '__main__':
     if DEVELOPMENT:
-        print("🚀 Starting SAML Test App with SAML-test.id")
-        print("🌐 App URL: http://localhost:5000")
-        print("🔗 SAML-test.id: https://samltest.id/")
-        print("📋 Test Users: user1@example.com/user1pass, user2@example.com/user2pass")
-        print()
+        print("🚀 =======Starting SAML Test App with SAML-test.id")
+        #print("🌐 App URL: http://localhost:5000")
+        #print("🔗 SAML-test.id: https://samltest.id/")
+        #print("📋 Test Users: user1@example.com/user1pass, user2@example.com/user2pass")
     
-    app.run(debug=DEVELOPMENT, host='0.0.0.0', port=5000)
+    print("=======DEVELOPMENT", DEVELOPMENT)
+    app.run(debug=DEVELOPMENT, host='0.0.0.0', port=5000, ssl_context='adhoc' if DEVELOPMENT else None)
