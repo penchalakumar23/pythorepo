@@ -225,7 +225,7 @@ def index():
 
 @app.route('/login')
 def login():
-    print(f"=========={VERSION}:/login: Login route accessed................")
+    print(f"=======*****=={VERSION}:/login: Login route accessed................")
     if 'samlUserdata' in session:
         print("===========/login: User already logged in, redirecting to index")
     req = prepare_flask_request(request)
