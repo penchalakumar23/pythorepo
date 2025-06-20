@@ -1,13 +1,13 @@
 {
     "sp": {
-        "entityId": "https://localhost:5000/metadata",
+        "entityId": "https://socratescoach-ut-saml.azurewebsites.net/metadata",
         "assertionConsumerService": {
-            "url": "https://localhost:5000/sso",
+            "url": "https://socratescoach-ut-saml.azurewebsites.net/sso",
             "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
         },
         "singleLogoutService": {
-            "url": "https://localhost:5000/sls",
-            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+            "url": "https://socratescoach-ut-saml.azurewebsites.net/sls",
+            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
         },
         "NameIDFormat": "urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress",
         "x509cert": "",
@@ -16,7 +16,7 @@
     "idp": {
         "entityId": "https://uthscsa-strongstar--rushssopoc.sandbox.my.salesforce.com",
         "singleSignOnService": {
-            "url": "https://uthscsa-strongstar--rushssopoc.sandbox.my.site.com/strongstartraining/idp/login?app=0spEc0000001z4f",
+            "url": "https://uthscsa-strongstar--rushssopoc.sandbox.my.site.com/strongstartraining/idp/login?app=0spEc00000020rx",
             "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
         },
         "singleLogoutService": {

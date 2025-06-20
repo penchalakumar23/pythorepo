@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+VERSION = "7.2"
+
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here-change-in-production...')
 
@@ -16,29 +18,53 @@ app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here-change-in-product
 #DEVELOPMENT = os.getenv('FLASK_ENV') == 'development' or os.getenv('DEVELOPMENT', 'True').lower() == 'true'
 DEVELOPMENT = False
 
+def get_saml_settings_path():
+    return os.path.join(os.path.dirname(__file__), 'saml')
+
 def init_saml_auth(req):
     auth = OneLogin_Saml2_Auth(req, custom_base_path=get_saml_settings_path())
     return auth
     #return none
 
 def prepare_flask_request(request):
+    print(f"=========={VERSION}:Preparing Flask request: {request.method} {request.url}")
     url_data = request.url.split('?')
+    print(f"=========={VERSION}:Preparing Flask request:url_data: {url_data}")
     
     # For development, handle HTTP requests properly
     scheme = 'https' if request.is_secure or request.headers.get('X-Forwarded-Proto') == 'https' else 'http'
+    x_forwarded_port = request.headers.get('X-Forwarded-Port')
+    requested_port = None
+    if ':' in request.host:
+        try:
+            requested_port = int(request.host.split(':')[-1])
+        except ValueError:
+            pass # Not a valid port number in host
     
+    print(f"=========={VERSION}:Request scheme 1 url_parts.port: {scheme}, port: {requested_port}, x_forwarded_port: {x_forwarded_port}")
+
+    # if requested_port is None: # Fallback if url_parts.port is not present (e.g., default ports)
+    #     requested_port = request.environ.get('SERVER_PORT')
+    #     if requested_port:
+    #         requested_port = int(requested_port)
+
+    if requested_port is None:
+        if scheme == 'https':
+            requested_port = 443
+        else:
+            requested_port = 80    
+
     return {
         'https': 'on' if scheme == 'https' else 'off',
         'http_host': request.headers.get('HTTP_X_FORWARDED_HOST', request.host),
-        'server_port': request.environ.get('SERVER_PORT', '5000'),
+        'server_port': requested_port, 
         'script_name': request.path,
         'get_data': request.args.copy(),
         'post_data': request.form.copy(),
         'query_string': url_data[1] if len(url_data) > 1 else ''
     }
 
-def get_saml_settings_path():
-    return os.path.join(os.path.dirname(__file__), 'saml')
+
 
 # HTML Templates as strings for simplicity
 LOGIN_TEMPLATE = '''
@@ -190,6 +216,7 @@ DASHBOARD_TEMPLATE = '''
 
 @app.route('/')
 def index():
+    print(f"=========={VERSION}:Index route accessed.................")
     if 'samlUserdata' in session:
         return render_template_string(DASHBOARD_TEMPLATE, 
                                     attributes=session.get('samlAttributes', {}))
@@ -198,17 +225,35 @@ def index():
 
 @app.route('/login')
 def login():
+    print(f"=========={VERSION}:/login: Login route accessed................")
+    if 'samlUserdata' in session:
+        print("===========/login: User already logged in, redirecting to index")
     req = prepare_flask_request(request)
+    print("==========/login: Preparing SAML Auth request:", req)
     auth = init_saml_auth(req)
+    print("==========/login: initialized SAML Auth:", auth)
+    if 'RelayState' in request.args:
+        print("==========/login: RelayState found in request:", request.args['RelayState'])
+        auth.set_relay_state(request.args['RelayState'])
+    else:
+        print("==========/login: No RelayState found in request")
     return redirect(auth.login())
 
 @app.route('/sso', methods=['POST'])
 def sso():
+  print(f"=========={VERSION}:/sso route accessed 7.1 ...................")
+  try:  
     req = prepare_flask_request(request)
+    print("==========/sso prepare_flask_request:", req)
     auth = init_saml_auth(req)
+    print("==========/sso initialized SAML Auth:", auth)
+    # if 'RelayState' in request.form:
+    #     print("==========/sso RelayState found in form:", request.form['RelayState'])
+        #auth.set_relay_state(request.form['RelayState'])
     auth.process_response()
 
     errors = auth.get_errors()
+    print("==========!!!!!!/sso process_response errors:", errors)
 
     if not errors:
         session['samlUserdata'] = auth.get_attributes()
@@ -220,30 +265,44 @@ def sso():
             session['samlAttributes'] = auth.get_attributes()
         
         self_url = OneLogin_Saml2_Utils.get_self_url(req)
+        print("==========/sso self_url:", self_url)
+        if 'RelayState' in request.form and request.form['RelayState'] == self_url + '/login':
+            print("==========/sso Redirecting to index after successful SSO")
+            return redirect(url_for('index'))
+        elif 'RelayState' in request.form:
+            print("==========/sso Redirecting to RelayState:", request.form['RelayState'])
+            return redirect(auth.redirect_to(request.form['RelayState']))
+        else:
+            print("==========/sso No RelayState, redirecting to index")
+
         return redirect(url_for('index'))
         # if 'RelayState' in request.form and self_url != request.form['RelayState']:
         #     return redirect(auth.redirect_to(request.form['RelayState']))
         # else:
         #     return redirect(url_for('index'))
     else:
-        print("SAML Errors: ", auth.get_last_error_reason())
-        return f"<h2>❌ Authentication Failed</h2><p>Error: {auth.get_last_error_reason()}</p><a href='{url_for('index')}'>Try Again</a>", 400
+        print("==========!!!!!!!SAML Errors: ", auth.get_last_error_reason())
+        return f"<h2>❌ SAML Errors:</h2><p>Error: {auth.get_last_error_reason()}</p><a href='{url_for('index')}'>Try Again</a>", 400
+  except Exception as e:
+        print(f"==========/sso Exception: {str(e)}")
+        return f"<h2>❌ Authentication Failed</h2><p>Exception: {str(e)}</p><a href='{url_for('index')}'>Try Again</a>", 500
 
 @app.route('/sls', methods=['GET', 'POST'])
 def sls():
+    print("=========={VERSION}:/sls route accessed...............")
     """Handle Single Logout Service (SLS) - both initiated and response"""
     try:
         # Debug logging for troubleshooting
-        print(f"SLS Request Method: {request.method}")
-        print(f"Query Args: {dict(request.args)}")
-        print(f"Form Data: {dict(request.form)}")
+        print(f"=======/sls SLS Request Method: {request.method}")
+        print(f"=======/sls Query Args: {dict(request.args)}")
+        print(f"=======/sls Form Data: {dict(request.form)}")
         
         # Check if we have SAML logout data
         has_saml_request = 'SAMLRequest' in request.args or 'SAMLRequest' in request.form
         has_saml_response = 'SAMLResponse' in request.args or 'SAMLResponse' in request.form
         
         if not has_saml_request and not has_saml_response:
-            print("No SAML logout data found - performing local logout")
+            print("==========/sls No SAML logout data found - performing local logout")
             session.clear()
             return redirect(url_for('index'))
         
@@ -256,33 +315,34 @@ def sls():
         errors = auth.get_errors()
         
         if not errors:
-            print("SLS processed successfully")
+            print("=========/sls SLS processed successfully")
             if url is not None:
-                print(f"Redirecting to: {url}")
+                print(f"=========/sls Redirecting to: {url}")
                 return redirect(url)
             else:
-                print("No redirect URL, going to index")
+                print("========/sls No redirect URL, going to index")
                 return redirect(url_for('index'))
         else:
-            print(f"SLO Errors: {errors}")
-            print(f"Last error reason: {auth.get_last_error_reason()}")
+            print(f"======/sls SLO Errors: {errors}")
+            print(f"======/sls Last error reason: {auth.get_last_error_reason()}")
             # Clear session anyway and redirect
             session.clear()
             return redirect(url_for('index'))
             
     except Exception as e:
-        print(f"Exception in SLS: {str(e)}")
+        print(f"======/sls Exception in SLS: {str(e)}")
         # Always clear session and redirect safely on any error
         session.clear()
         return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
+    print("=========={VERSION}:/logout route accessed...............")
     """Initiate SAML logout or local logout"""
     try:
         # Check if user is actually logged in via SAML
         if 'samlUserdata' not in session:
-            print("No SAML session found - redirecting to index")
+            print("======/logout No SAML session found - redirecting to index")
             return redirect(url_for('index'))
         
         req = prepare_flask_request(request)
@@ -290,11 +350,11 @@ def logout():
         
         # Try to initiate SAML logout
         logout_url = auth.logout()
-        print(f"Initiating SAML logout to: {logout_url}")
+        print(f"======/logout Initiating SAML logout to: {logout_url}")
         return redirect(logout_url)
         
     except Exception as e:
-        print(f"Error initiating SAML logout: {str(e)}")
+        print(f"======/logout Error initiating SAML logout: {str(e)}")
         # Fallback to local logout
         session.clear()
         return redirect(url_for('index'))
@@ -303,18 +363,26 @@ def logout():
 # Alternative: Add a local logout route for development/fallback
 @app.route('/logout/local')
 def local_logout():
+    print("==========/logout/local route accessed...............")
     """Force local logout without SAML"""
     session.clear()
     return redirect(url_for('index'))
 
 @app.route('/metadata')
 def metadata():
+    print("==========/metadata route accessed...............")
     settings = OneLogin_Saml2_Settings(custom_base_path=get_saml_settings_path())
+    print("==========/metadata Initialized SAML Settings:", settings)
     metadata = settings.get_sp_metadata()
+    print("==========/metadata SP Metadata generated", metadata)
     errors = settings.check_sp_settings()
+    print("==========/metadata SP Settings Errors:", errors)
+    if not metadata:
+        print("==========/metadata No metadata generated")
+        return "<h2>❌ Metadata Generation Failed</h2><p>No metadata generated.</p>", 500
 
     if errors:
-        print("Metadata Errors: ", errors)
+        print("==========/metadata Metadata Errors: ", errors)
         return f"<h2>❌ Metadata Generation Failed</h2><p>Errors: {errors}</p>", 500
 
     resp = app.response_class(
@@ -345,6 +413,7 @@ def mock_sso():
 
 @app.route('/dev/status')
 def dev_status():
+    print("==========/dev/status route accessed...........")
     if not DEVELOPMENT:
         return "Not available in production", 404
     
@@ -363,6 +432,7 @@ def dev_status():
 
 @app.route('/saml/info')
 def saml_info():
+    print("==========/saml/info route accessed...............")
     if not DEVELOPMENT:
         return "Not available in production", 404
     
@@ -399,10 +469,12 @@ def saml_info():
 
 if __name__ == '__main__':
     if DEVELOPMENT:
-        print("🚀 =======Starting SAML Test App with SAML-test.id")
+        print("🚀 =======__main__ Starting SAML Test App with SAML-test.id")
         #print("🌐 App URL: http://localhost:5000")
         #print("🔗 SAML-test.id: https://samltest.id/")
         #print("📋 Test Users: user1@example.com/user1pass, user2@example.com/user2pass")
     
-    print("=======DEVELOPMENT", DEVELOPMENT)
-    app.run(debug=DEVELOPMENT, host='0.0.0.0', port=5000, ssl_context='adhoc' if DEVELOPMENT else None)
+    print("=======main: started.......DEVELOPMENT:", DEVELOPMENT)
+    #app.run(debug=DEVELOPMENT, host='0.0.0.0', port=8000, ssl_context='adhoc' if DEVELOPMENT else None)
+    app.run(host='0.0.0.0', port=8000, debug=False)
+    #app.run(host='0.0.0.0', port=5000, ssl_context=('localhost.pem', 'localhost-key.pem'), debug=False)

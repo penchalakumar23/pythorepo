@@ -28,7 +28,15 @@ RUN if [ -f requirements.txt ]; then \
 COPY . .
 
 # Expose port (change if your app uses a different port)
-EXPOSE 5000
+EXPOSE 8000
+
+#ENV SERVER_PORT=8000
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=production
 
 # Set default command (update as needed for your app)
 CMD ["python", "app.py"]
+# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "2", "app:app"]
+
+# docker build -t flask-saml-app .
+# docker run -p 8080:8000 flask-saml-app
