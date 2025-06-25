@@ -1,4 +1,4 @@
-name: Build and deploy Python app to Azure Web App -pythondemoxml
+name: Build and deploy Python app to Azure Web App - socratescoach-saml
 
 on:
   push:
@@ -54,11 +54,6 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DDAC869D424C459D8404C3C417F6912C }}
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
