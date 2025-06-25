@@ -97,7 +97,7 @@ jobs:
       - name: Unzip artifact for deployment
 
         run: unzip release.zip
-
+    
       - name: 'Deploy to Azure Web App'
 
         uses: azure/webapps-deploy@v3
@@ -106,7 +106,7 @@ jobs:
 
         with:
 
-          app-name: 'socratescoach-saml'
+          app-name: 'pythondemoxml'
 
           slot-name: 'Production'
 
